@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Incident and Location Monitoring System</title>
+  <style>
+    :root {
+      --bg: radial-gradient(circle at 20% 20%, #0f172a, #0c1024 45%, #060a1a 75%);
+      --accent: #5de0e6;
+      --accent-2: #7f5af0;
+      --text: #eef2ff;
+      --muted: #9fb3c8;
+      --card: rgba(255, 255, 255, 0.04);
+      --stroke: rgba(255, 255, 255, 0.08);
+      --success: #4ade80;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      --blur: blur(18px);
+      --font: "Bahnschrift", "Century Gothic", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    .shell {
+      position: relative;
+      padding: 60px 18px 80px;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+
+    .glow {
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      background: radial-gradient(circle, rgba(93, 224, 230, 0.35), transparent 70%);
+      filter: var(--blur);
+      z-index: 0;
+    }
+    .glow.one { top: 40px; left: -120px; }
+    .glow.two { bottom: 60px; right: -140px; background: radial-gradient(circle, rgba(127, 90, 240, 0.32), transparent 70%); }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, rgba(93, 224, 230, 0.12), rgba(127, 90, 240, 0.16));
+      border: 1px solid var(--stroke);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .brand span {
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .brand strong { color: var(--text); font-size: 14px; }
+
+    .hero {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px;
+      align-items: center;
+    }
+
+    .lede h1 {
+      font-size: clamp(32px, 5vw, 46px);
+      line-height: 1.1;
+      margin: 0 0 18px;
+      letter-spacing: -0.8px;
+    }
+    .lede h1 .highlight { color: var(--accent); }
+    .lede p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      max-width: 620px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 8px 0 20px;
+    }
+    .pill {
+      padding: 8px 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.4px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn {
+      border: none;
+      cursor: pointer;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+    .btn.primary { background: linear-gradient(135deg, #5de0e6, #7f5af0); color: #0a0d1a; }
+    .btn.ghost { background: transparent; border: 1px solid var(--stroke); color: var(--text); }
+    .btn:hover { transform: translateY(-2px); }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: 18px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .stat {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .stat label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.3px;
+      margin-bottom: 6px;
+    }
+    .stat strong { font-size: 18px; }
+
+    .mock {
+      background: linear-gradient(145deg, rgba(93, 224, 230, 0.12), rgba(127, 90, 240, 0.18));
+      border: 1px solid rgba(93, 224, 230, 0.28);
+      color: #0b1221;
+      padding: 18px;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .mock small { display: block; color: #0b1221; letter-spacing: 0.4px; font-weight: 700; margin-bottom: 6px; }
+    .mock .status { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: #0b1221; font-weight: 800; }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .step {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      gap: 10px;
+      align-items: center;
+      transition: border 0.2s ease, transform 0.2s ease;
+    }
+    .step.active { border-color: rgba(93, 224, 230, 0.8); transform: translateX(4px); }
+    .step time { color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
+    .step p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+    .timer {
+      margin-top: 16px;
+      display: grid;
+      gap: 10px;
+    }
+    .bar {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--stroke);
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #5de0e6);
+      transform-origin: left;
+      transition: transform 0.2s linear;
+    }
+
+    .mini-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .mini {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--stroke);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .mini strong { display: block; color: var(--text); margin-bottom: 6px; }
+
+    @media (max-width: 640px) {
+      header { flex-direction: column; align-items: flex-start; }
+      .step { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="glow one"></div>
+    <div class="glow two"></div>
+
+    <header>
+      <div class="brand">
+        <span>Project</span>
+        <strong>Incident &amp; Location Monitoring System</strong>
+      </div>
+      <div class="pill">Android + Cloud + SMS Beacons</div>
+    </header>
+
+    <section class="hero">
+      <div class="lede">
+        <h1>Improve rural response times with <span class="highlight">live geofencing</span> and resilient SMS beacons.</h1>
+        <p>
+          When minutes matter, the system triggers loud self-check prompts, alerts family instantly, and streams location via data or SMS. Escalation to a control room happens automatically if the user does not confirm safety within 60 seconds.
+        </p>
+        <div class="badges">
+          <div class="pill">Target response: under 8 minutes</div>
+          <div class="pill">Fallback-ready: data or SMS</div>
+          <div class="pill">Designed for dementia and rural contexts</div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="simulate">Simulate 60s self-check</button>
+          <button class="btn ghost" id="resolve">Resolve &amp; sync trail</button>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <label>Precision on incident</label>
+            <strong>�26 m via GPS</strong>
+          </div>
+          <div class="stat">
+            <label>Signal fallbacks</label>
+            <strong>WhatsApp + GeoSMS + SMS beacons</strong>
+          </div>
+          <div class="stat">
+            <label>Beacon cadence</label>
+            <strong>30 s for 5 min, then 2�3 min</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="mock">
+          <small>Live console</small>
+          <div class="status">Lost Mode � Family alerted � Awaiting self-check</div>
+          <div class="mini-cards">
+            <div class="mini">
+              <strong>01:09:42</strong>
+              Geofence exit near Rivi�re des Anguilles. Accuracy �26 m.
+            </div>
+            <div class="mini">
+              <strong>01:09:46</strong>
+              Family notified via WhatsApp + GeoSMS. No ACK required.
+            </div>
+            <div class="mini">
+              <strong>01:09:50</strong>
+              SMS beacon stream starts. Map and console auto-update.
+            </div>
+            <div class="mini">
+              <strong>01:10:44</strong>
+              Self-check expired; control room engaged with breadcrumb trail.
+            </div>
+          </div>
+        </div>
+
+        <div class="timer">
+          <div class="bar"><span id="progress"></span></div>
+          <div class="timeline" id="timeline">
+            <div class="step" data-offset="0">
+              <time>01:09:42</time>
+              <p>Geofence exit detected. Loud prompt preps the self-check and accuracy ring opens.</p>
+            </div>
+            <div class="step" data-offset="2">
+              <time>01:09:44</time>
+              <p>Lost-Mode screen + alarm + vibration. 60-second self-check begins on device.</p>
+            </div>
+            <div class="step" data-offset="4">
+              <time>01:09:46</time>
+              <p>Family notified instantly (WhatsApp + GeoSMS) with Plus Code, battery, link.</p>
+            </div>
+            <div class="step" data-offset="8">
+              <time>01:09:50</time>
+              <p>SMS beacons start every 30 s for 5 min; server updates live map for DRPs.</p>
+            </div>
+            <div class="step" data-offset="22">
+              <time>01:10:44</time>
+              <p>No "I am safe" received; control room console lights up with breadcrumb trail.</p>
+            </div>
+            <div class="step" data-offset="38">
+              <time>01:11:20</time>
+              <p>Second and third beacons tick in; operator coordinates family response.</p>
+            </div>
+            <div class="step" data-offset="64">
+              <time>01:17:05</time>
+              <p>Recovery confirmed. Alarm silenced, trail syncs once Wi-Fi reconnects.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const simulateBtn = document.getElementById('simulate');
+    const resolveBtn = document.getElementById('resolve');
+    const bar = document.getElementById('progress');
+    const steps = Array.from(document.querySelectorAll('.step'));
+    let timerId;
+    let startTime;
+    const total = 60; // seconds
+
+    function setActive(offsetSec) {
+      steps.forEach((step) => {
+        const stepOffset = Number(step.dataset.offset);
+        step.classList.toggle('active', offsetSec >= stepOffset);
+      });
+    }
+
+    function animateTimeline() {
+      const now = Date.now();
+      const elapsed = Math.min((now - startTime) / 1000, total);
+      const remaining = Math.max(total - elapsed, 0);
+      const ratio = remaining / total;
+      bar.style.transform = `scaleX(${ratio})`;
+      setActive(elapsed);
+
+      if (remaining <= 0) {
+        clearInterval(timerId);
+        simulateBtn.textContent = 'Self-check expired � escalate';
+        simulateBtn.disabled = false;
+      }
+    }
+
+    function startCountdown() {
+      clearInterval(timerId);
+      startTime = Date.now();
+      bar.style.transformOrigin = 'left';
+      simulateBtn.textContent = '60s self-check running...';
+      simulateBtn.disabled = true;
+      setActive(0);
+      animateTimeline();
+      timerId = setInterval(animateTimeline, 200);
+    }
+
+    function resolveIncident() {
+      clearInterval(timerId);
+      bar.style.transform = 'scaleX(0)';
+      simulateBtn.textContent = 'Simulate 60s self-check';
+      simulateBtn.disabled = false;
+      steps.forEach((step) => step.classList.remove('active'));
+      resolveBtn.textContent = 'Resolved � trail synced';
+      setTimeout(() => (resolveBtn.textContent = 'Resolve & sync trail'), 1800);
+    }
+
+    simulateBtn.addEventListener('click', startCountdown);
+    resolveBtn.addEventListener('click', resolveIncident);
+    setActive(0);
+    bar.style.transform = 'scaleX(1)';
+  </script>
+</body>
+</html>
